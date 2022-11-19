@@ -1,2 +1,2 @@
-# ani-community
-written in go (backend)
+# test
+written in GO and ReactJS
