@@ -2,13 +2,17 @@ package models
 
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
+type signIn struct {
+	Id       primitive.ObjectID `json:"id,omitempty"`
+	Email    string             `json:"email,omitempty" validate:"required"`
+	Password string             `json:"password,omitempty" validate:"required"`
+}
 type User struct {
-	Id         primitive.ObjectID `json:"id,omitempty"`
-	Name       string             `json:"name,omitempty" validate:"required"`
-	Age        string             `json:"age,omitempty" validate:"required"`
-	Orgs       string             `json:"orgs,omitempty" validate:"required"`
-	About      string             `json:"about,omitempty" validate:"required"`
-	Allcontent *AllContents       `json:"allcontents,omitempty" validate:"required"`
+	Id    primitive.ObjectID `json:"id,omitempty"`
+	Name  string             `json:"name,omitempty" validate:"required"`
+	Age   string             `json:"age,omitempty" validate:"required"`
+	Orgs  string             `json:"orgs,omitempty" validate:"required"`
+	About string             `json:"about,omitempty" validate:"required"`
 }
 
 type AllContents struct {

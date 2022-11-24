@@ -16,6 +16,6 @@ func UserRoute(app *fiber.App) {
 
 	//=============         only admin       =================
 	// find, edit, delete many by name (many)
-	app.Get("/alluser/:name/:age", controllers.Alluserbyage)
+	app.Get("/allusers/:name/:age", controllers.Alluserbyage)
 
 }

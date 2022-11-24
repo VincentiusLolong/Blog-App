@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"fiber-mongo-api/configs"
+	"fiber-mongo-api/controllers/repo"
 	"fiber-mongo-api/models"
 	"fiber-mongo-api/responses"
 	"net/http"
@@ -15,7 +16,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var userCollection *mongo.Collection = configs.GetCollection(configs.DB, configs.EnvMongoCollection1())
+var userCollection *mongo.Collection = configs.GetCollection(configs.EnvMongoCollection1())
 var validate = validator.New()
 
 func contectx() (context.Context, context.CancelFunc) {
@@ -36,22 +37,32 @@ func CreateUser(c *fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).JSON(responses.UserResponse{Status: http.StatusBadRequest, Message: "error", Data: &fiber.Map{"data": validationErr.Error()}})
 	}
 
-	newUser := models.User{
-		Id:    primitive.NewObjectID(),
-		Name:  user.Name,
-		Age:   user.Age,
-		Orgs:  user.Orgs,
-		About: user.About,
-	}
+	res, err := repo.CreateUserDB(user, a)
 
-	result, err := userCollection.InsertOne(a, newUser)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{Status: http.StatusInternalServerError, Message: "error", Data: &fiber.Map{"data": err.Error()}})
 	}
 
-	return c.Status(http.StatusCreated).JSON(responses.UserResponse{Status: http.StatusCreated, Message: "success", Data: &fiber.Map{"data": result}})
+	return c.Status(http.StatusCreated).JSON(responses.UserResponse{Status: http.StatusCreated, Message: "success", Data: &fiber.Map{"data": res}})
 }
 
+// func signIn(c *fiber.Ctx) error {
+// 	a, b := contectx()
+// 	userId := c.Params("userId")
+// 	var user models.User
+// 	defer b()
+// 	if err := c.BodyParser(&user); err != nil {
+// 		return c.Status(http.StatusBadRequest).JSON(responses.UserResponse{Status: http.StatusBadRequest, Message: "error", Data: &fiber.Map{"data": err.Error()}})
+// 	}
+
+// 	if validationErr := validate.Struct(&user); validationErr != nil {
+// 		return c.Status(http.StatusBadRequest).JSON(responses.UserResponse{Status: http.StatusBadRequest, Message: "error", Data: &fiber.Map{"data": validationErr.Error()}})
+// 	}
+
+// 	var getter models.User
+// 	err := userCollection.FindOne(bson.M{"orgs": user.Name, "age": user.Age}).Decode(getter)
+
+// }
 func GetAUser(c *fiber.Ctx) error {
 	a, b := contectx()
 	userId := c.Params("userId")
