@@ -6,6 +6,7 @@ import (
 	"fiber-mongo-api/configs"
 	"fiber-mongo-api/models"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -29,5 +30,20 @@ func CreateUserDB(userDb models.User, a context.Context) (*mongo.InsertOneResult
 		return nil, errors.New("email already exists")
 	} else {
 		return result, nil
+	}
+}
+
+func SignInDB(userId, email, password string, a context.Context) (*models.User, error) {
+	var user *models.User
+	objId, _ := primitive.ObjectIDFromHex(userId)
+	err := userCollection.FindOne(a, bson.M{
+		"id":       objId,
+		"email":    email,
+		"password": password}).Decode(&user)
+
+	if err != nil {
+		return nil, errors.New("cant find the account")
+	} else {
+		return user, nil
 	}
 }

@@ -63,21 +63,40 @@ func CreateUser(c *fiber.Ctx) error {
 			"data": res}})
 }
 
-// func signIn(c *fiber.Ctx) error {
-// 	a, b := contectx()
-// 	userId := c.Params("userId")
-// 	var user models.User
-// 	defer b()
-// 	if err := c.BodyParser(&user); err != nil {
-// 		return c.Status(http.StatusBadRequest).JSON(responses.UserResponse{Status: http.StatusBadRequest, Message: "error", Data: &fiber.Map{"data": err.Error()}})
-// 	}
+func SignIn(c *fiber.Ctx) error {
+	a, b := contectx()
+	sign := map[string]string{
+		"userid":   c.Params("userId"),
+		"email":    c.Params("email"),
+		"password": c.Params("pass")}
 
-// 	if validationErr := validate.Struct(&user); validationErr != nil {
-// 		return c.Status(http.StatusBadRequest).JSON(responses.UserResponse{Status: http.StatusBadRequest, Message: "error", Data: &fiber.Map{"data": validationErr.Error()}})
-// 	}
+	// for Key, ss := range arrays {
+	// 	if ss == "" {
+	// 		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{
+	// 			Status:  http.StatusInternalServerError,
+	// 			Message: "error",
+	// 			Data: &fiber.Map{
+	// 				"data": "Please add" + Key + "for Login"}})
+	// 	}
+	// }
 
-// 	var getter models.User
-// 	err := userCollection.FindOne(bson.M{"orgs": user.Name, "age": user.Age}).Decode(getter)
+	res, err := repo.SignInDB(sign["userid"], sign["email"], sign["password"], a)
+
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{
+			Status:  http.StatusInternalServerError,
+			Message: "error",
+			Data: &fiber.Map{
+				"data": err.Error()}})
+	}
+
+	defer b()
+	return c.Status(http.StatusOK).JSON(responses.UserResponse{
+		Status:  http.StatusOK,
+		Message: "success",
+		Data: &fiber.Map{
+			"data": res.Email}})
+}
 
 // }
 func GetAUser(c *fiber.Ctx) error {
