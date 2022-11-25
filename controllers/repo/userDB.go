@@ -14,11 +14,14 @@ var userCollection *mongo.Collection = configs.GetCollection(configs.EnvMongoCol
 
 func CreateUserDB(userDb models.User, a context.Context) (*mongo.InsertOneResult, error) {
 	newUser := models.User{
-		Id:    primitive.NewObjectID(),
-		Name:  userDb.Name,
-		Age:   userDb.Age,
-		Orgs:  userDb.Orgs,
-		About: userDb.About,
+		Id:       primitive.NewObjectID(),
+		Email:    userDb.Email,
+		Password: userDb.Password,
+		Name:     userDb.Name,
+		Age:      userDb.Age,
+		Orgs:     userDb.Orgs,
+		About:    userDb.About,
+		Gender:   userDb.Gender,
 	}
 
 	result, err := userCollection.InsertOne(a, newUser)

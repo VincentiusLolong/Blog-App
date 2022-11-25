@@ -30,20 +30,37 @@ func CreateUser(c *fiber.Ctx) error {
 	defer b()
 
 	if err := c.BodyParser(&user); err != nil {
-		return c.Status(http.StatusBadRequest).JSON(responses.UserResponse{Status: http.StatusBadRequest, Message: "error", Data: &fiber.Map{"data": err.Error()}})
+		return c.Status(http.StatusBadRequest).JSON(
+			responses.UserResponse{
+				Status:  http.StatusBadRequest,
+				Message: "error",
+				Data: &fiber.Map{
+					"data": err.Error()}})
 	}
-
 	if validationErr := validate.Struct(&user); validationErr != nil {
-		return c.Status(http.StatusBadRequest).JSON(responses.UserResponse{Status: http.StatusBadRequest, Message: "error", Data: &fiber.Map{"data": validationErr.Error()}})
+		return c.Status(http.StatusBadRequest).JSON(
+			responses.UserResponse{
+				Status:  http.StatusBadRequest,
+				Message: "error",
+				Data: &fiber.Map{
+					"data": validationErr.Error()}})
 	}
 
 	res, err := repo.CreateUserDB(user, a)
 
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{Status: http.StatusInternalServerError, Message: "error", Data: &fiber.Map{"data": err.Error()}})
+		return c.Status(http.StatusInternalServerError).JSON(
+			responses.UserResponse{
+				Status:  http.StatusInternalServerError,
+				Message: "error",
+				Data: &fiber.Map{
+					"data": err.Error()}})
 	}
-
-	return c.Status(http.StatusCreated).JSON(responses.UserResponse{Status: http.StatusCreated, Message: "success", Data: &fiber.Map{"data": res}})
+	return c.Status(http.StatusCreated).JSON(responses.UserResponse{
+		Status:  http.StatusCreated,
+		Message: "success",
+		Data: &fiber.Map{
+			"data": res}})
 }
 
 // func signIn(c *fiber.Ctx) error {
