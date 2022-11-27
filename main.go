@@ -16,5 +16,5 @@ func main() {
 	//routes
 	routes.UserRoute(app) //add this
 
-	app.Listen(configs.Envhttp())
+	app.Listen(configs.AllEnv("SERVER"))
 }

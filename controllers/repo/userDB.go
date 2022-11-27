@@ -11,7 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var userCollection *mongo.Collection = configs.GetCollection(configs.EnvMongoCollection1())
+var userCollection *mongo.Collection = configs.GetCollection(configs.AllEnv("CONTENTCOLLECTION"))
 
 func CreateUserDB(userDb models.User, a context.Context) (*mongo.InsertOneResult, error) {
 	newUser := models.User{

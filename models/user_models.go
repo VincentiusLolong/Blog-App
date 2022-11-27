@@ -1,6 +1,15 @@
 package models
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"github.com/dgrijalva/jwt-go"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
+
+type JWTClaim struct {
+	Email string `json:"email"`
+	Name  string `json:"name"`
+	jwt.StandardClaims
+}
 
 type User struct {
 	Id       primitive.ObjectID `json:"id,omitempty"`

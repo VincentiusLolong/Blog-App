@@ -16,7 +16,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var userCollection *mongo.Collection = configs.GetCollection(configs.EnvMongoCollection1())
+var userCollection *mongo.Collection = configs.GetCollection(configs.AllEnv("CONTENTCOLLECTION"))
 var validate = validator.New()
 
 func contectx() (context.Context, context.CancelFunc) {
@@ -70,16 +70,6 @@ func SignIn(c *fiber.Ctx) error {
 		"email":    c.Params("email"),
 		"password": c.Params("pass")}
 
-	// for Key, ss := range arrays {
-	// 	if ss == "" {
-	// 		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{
-	// 			Status:  http.StatusInternalServerError,
-	// 			Message: "error",
-	// 			Data: &fiber.Map{
-	// 				"data": "Please add" + Key + "for Login"}})
-	// 	}
-	// }
-
 	res, err := repo.SignInDB(sign["userid"], sign["email"], sign["password"], a)
 
 	if err != nil {
@@ -98,7 +88,6 @@ func SignIn(c *fiber.Ctx) error {
 			"data": res.Email}})
 }
 
-// }
 func GetAUser(c *fiber.Ctx) error {
 	a, b := contectx()
 	userId := c.Params("userId")
