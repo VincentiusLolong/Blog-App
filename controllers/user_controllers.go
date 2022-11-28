@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"fiber-mongo-api/configs"
+	"fiber-mongo-api/controllers/auth"
 	"fiber-mongo-api/controllers/repo"
 	"fiber-mongo-api/models"
 	"fiber-mongo-api/responses"
@@ -44,6 +45,17 @@ func CreateUser(c *fiber.Ctx) error {
 				Message: "error",
 				Data: &fiber.Map{
 					"data": validationErr.Error()}})
+	}
+
+	errs := auth.HashPassword(&user, user.Password)
+
+	if errs != nil {
+		return c.Status(http.StatusBadRequest).JSON(
+			responses.UserResponse{
+				Status:  http.StatusBadRequest,
+				Message: "error",
+				Data: &fiber.Map{
+					"data": errs.Error()}})
 	}
 
 	res, err := repo.CreateUserDB(user, a)

@@ -6,9 +6,14 @@ import (
 )
 
 type JWTClaim struct {
-	Email string `json:"email"`
-	Name  string `json:"name"`
+	Email string `json:"email,omitempty" validate:"required"`
+	Name  string `json:"name,omitempty" validate:"required"`
 	jwt.StandardClaims
+}
+
+type TokenRequest struct {
+	Email    string `json:"email,omitempty" validate:"required"`
+	Password string `json:"password,omitempty" validate:"required"`
 }
 
 type User struct {
