@@ -1,18 +1,20 @@
-package auth
+package secure
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
+	"fiber-mongo-api/configs"
 	"fiber-mongo-api/models"
 
 	"github.com/dgrijalva/jwt-go"
 )
 
-var jwtKey = []byte("viani22BAgachaALL@Contents(12,16,18+)_$christmast_$JapanDAY")
+var jwtKey = []byte(configs.AllEnv("JWT_SECRET_KEY"))
 
 func GenerateJWT(email string, name string) (tokenString string, err error) {
-	expirationTime := time.Now().Add(1 * time.Minute)
+	expirationTime := time.Now().Add(1 * time.Hour)
 	claims := &models.JWTClaim{
 		Email: email,
 		Name:  name,
@@ -24,6 +26,8 @@ func GenerateJWT(email string, name string) (tokenString string, err error) {
 	tokenString, err = token.SignedString(jwtKey)
 	return
 }
+
+// set map[string]string,
 func ValidateToken(signedToken string) (err error) {
 	token, err := jwt.ParseWithClaims(
 		signedToken,
@@ -35,14 +39,24 @@ func ValidateToken(signedToken string) (err error) {
 	if err != nil {
 		return
 	}
-	claims, ok := token.Claims.(*models.JWTClaim)
+	credential, ok := token.Claims.(*models.JWTClaim)
 	if !ok {
 		err = errors.New("couldn't parse claims")
 		return
 	}
-	if claims.ExpiresAt < time.Now().Local().Unix() {
+	if credential.ExpiresAt < time.Now().Local().Unix() {
 		err = errors.New("token expired")
 		return
 	}
+	set := map[string]string{
+		"Email": credential.Email,
+		"Name":  credential.Name}
+
+	fmt.Println(set)
+	// sets :=
+	// values := reflect.ValueOf(&models.JWTClaim).Type()
+	// for key, val := range values {
+	// 	fmt.Printf("Key: %v, value: %v\n", key, val)
+	// }
 	return
 }

@@ -1,4 +1,4 @@
-package auth
+package secure
 
 import (
 	"context"
@@ -38,9 +38,8 @@ func CheckPassword(u *models.User, providedPassword string) error {
 func GenearateToken(c *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	var request models.TokenRequest
-	var user models.User
 
+	var request models.TokenRequest
 	if err := c.BodyParser(&request); err != nil {
 		return c.Status(http.StatusBadRequest).JSON(
 			responses.UserResponse{
@@ -58,6 +57,7 @@ func GenearateToken(c *fiber.Ctx) error {
 					"data": validationErr.Error()}})
 	}
 
+	var user models.User
 	if err := userCollection.FindOne(ctx, bson.M{"email": request.Email}).Decode(&user); err != nil {
 		return c.Status(http.StatusBadRequest).JSON(
 			responses.UserResponse{
