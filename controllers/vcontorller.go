@@ -11,5 +11,8 @@ import (
 // }
 
 func Ping(c *fiber.Ctx) error {
-	return c.Status(http.StatusOK).JSON(fiber.Map{"message": "ok"})
+	if c.Locals("email") == "test@gmail.com" {
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": c.Locals("email")})
+	}
+	return c.Status(http.StatusOK).JSON(fiber.Map{"message": "not ok"})
 }

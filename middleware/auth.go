@@ -19,17 +19,18 @@ func Auth() func(*fiber.Ctx) error {
 				"message": "invalid authorization",
 			})
 		}
-		claim := secure.ValidateToken(string(split[1]))
+		data, claim := secure.ValidateToken(string(split[1]))
 		if claim != nil {
 			return c.Status(fiber.StatusForbidden).JSON(&fiber.Map{
 				"status":  "ERROR",
 				"message": claim.Error(),
 			})
 		}
-		// 	email := claim["email"].(string)
+		email := data["Email"]
 		// // id := userClaims["id"].(string)
 
 		c.Locals("token", split[1])
+		c.Locals("email", email)
 		// c.Locals("user_email", email)
 		return c.Next()
 	}

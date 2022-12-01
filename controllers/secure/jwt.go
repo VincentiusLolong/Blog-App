@@ -2,7 +2,6 @@ package secure
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"fiber-mongo-api/configs"
@@ -28,7 +27,7 @@ func GenerateJWT(email string, name string) (tokenString string, err error) {
 }
 
 // set map[string]string,
-func ValidateToken(signedToken string) (err error) {
+func ValidateToken(signedToken string) (set map[string]string, err error) {
 	token, err := jwt.ParseWithClaims(
 		signedToken,
 		&models.JWTClaim{},
@@ -48,15 +47,9 @@ func ValidateToken(signedToken string) (err error) {
 		err = errors.New("token expired")
 		return
 	}
-	set := map[string]string{
+	set = map[string]string{
 		"Email": credential.Email,
 		"Name":  credential.Name}
 
-	fmt.Println(set)
-	// sets :=
-	// values := reflect.ValueOf(&models.JWTClaim).Type()
-	// for key, val := range values {
-	// 	fmt.Printf("Key: %v, value: %v\n", key, val)
-	// }
 	return
 }
