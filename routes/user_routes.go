@@ -2,7 +2,6 @@ package routes
 
 import (
 	"fiber-mongo-api/controllers" //add this
-	"fiber-mongo-api/controllers/secure"
 	"fiber-mongo-api/middleware"
 
 	"github.com/gofiber/fiber/v2"
@@ -13,7 +12,7 @@ func UserRoute(app *fiber.App) {
 	// find, editm delete by id (one)
 	UserRoute := app.Group("/api/V1")
 	UserRoute.Post("/user/register", controllers.CreateUser)
-	UserRoute.Post("/token", secure.GenearateToken)
+	UserRoute.Post("/token", controllers.SignIn)
 	secured := UserRoute.Group("/secured").Use(middleware.Auth())
 	secured.Get("/ping", controllers.Ping)
 	// UserRoute.Get("/users/:userId/:email/:pass", controllers.SignIn)

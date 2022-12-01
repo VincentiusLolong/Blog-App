@@ -26,11 +26,11 @@ func Auth() func(*fiber.Ctx) error {
 				"message": claim.Error(),
 			})
 		}
-		email := data["Email"]
 		// // id := userClaims["id"].(string)
 
 		c.Locals("token", split[1])
-		c.Locals("email", email)
+		c.Locals("email", data["Email"])
+		c.Locals("name", data["Name"])
 		// c.Locals("user_email", email)
 		return c.Next()
 	}

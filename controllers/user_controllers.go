@@ -77,13 +77,27 @@ func CreateUser(c *fiber.Ctx) error {
 
 func SignIn(c *fiber.Ctx) error {
 	a, b := contectx()
-	sign := map[string]string{
-		"userid":   c.Params("userId"),
-		"email":    c.Params("email"),
-		"password": c.Params("pass")}
+	defer b()
 
-	res, err := repo.SignInDB(sign["userid"], sign["email"], sign["password"], a)
+	var signin models.Login
+	if err := c.BodyParser(&signin); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(
+			responses.UserResponse{
+				Status:  http.StatusBadRequest,
+				Message: "error",
+				Data: &fiber.Map{
+					"data": err.Error()}})
+	}
+	if validationErr := validate.Struct(&signin); validationErr != nil {
+		return c.Status(http.StatusBadRequest).JSON(
+			responses.UserResponse{
+				Status:  http.StatusBadRequest,
+				Message: "error",
+				Data: &fiber.Map{
+					"data": validationErr.Error()}})
+	}
 
+	res, err := repo.SignInDB(signin, a)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{
 			Status:  http.StatusInternalServerError,
@@ -92,12 +106,31 @@ func SignIn(c *fiber.Ctx) error {
 				"data": err.Error()}})
 	}
 
-	defer b()
+	if CredentialError := secure.CheckPassword(res, signin.Password); CredentialError != nil {
+		return c.Status(http.StatusBadRequest).JSON(
+			responses.UserResponse{
+				Status:  http.StatusBadRequest,
+				Message: "error",
+				Data: &fiber.Map{
+					"data": CredentialError.Error()}})
+	}
+
+	tokenstring, err := secure.GenerateJWT(res.Email, res.Name)
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(
+			responses.UserResponse{
+				Status:  http.StatusBadRequest,
+				Message: "error",
+				Data: &fiber.Map{
+					"data": err.Error()}})
+	}
+
 	return c.Status(http.StatusOK).JSON(responses.UserResponse{
 		Status:  http.StatusOK,
 		Message: "success",
 		Data: &fiber.Map{
-			"data": res.Email}})
+			"data":  res.Name,
+			"token": tokenstring}})
 }
 
 func GetAUser(c *fiber.Ctx) error {

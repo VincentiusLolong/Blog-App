@@ -33,13 +33,11 @@ func CreateUserDB(userDb models.User, a context.Context) (*mongo.InsertOneResult
 	}
 }
 
-func SignInDB(userId, email, password string, a context.Context) (*models.User, error) {
+func SignInDB(userLogin models.Login, a context.Context) (*models.User, error) {
 	var user *models.User
-	objId, _ := primitive.ObjectIDFromHex(userId)
+
 	err := userCollection.FindOne(a, bson.M{
-		"id":       objId,
-		"email":    email,
-		"password": password}).Decode(&user)
+		"email": userLogin.Email}).Decode(&user)
 
 	if err != nil {
 		return nil, errors.New("cant find the account")
