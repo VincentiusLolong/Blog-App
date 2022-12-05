@@ -86,7 +86,7 @@ func SignIn(c *fiber.Ctx) error {
 				Status:  http.StatusBadRequest,
 				Message: "error",
 				Data: &fiber.Map{
-					"data": err.Error()}})
+					"DataNull": err.Error()}})
 	}
 	if validationErr := validate.Struct(&signin); validationErr != nil {
 		return c.Status(http.StatusBadRequest).JSON(
@@ -94,7 +94,7 @@ func SignIn(c *fiber.Ctx) error {
 				Status:  http.StatusBadRequest,
 				Message: "error",
 				Data: &fiber.Map{
-					"data": validationErr.Error()}})
+					"ValidateErr": validationErr.Error()}})
 	}
 
 	res, err := repo.SignInDB(signin, a)
@@ -114,8 +114,12 @@ func SignIn(c *fiber.Ctx) error {
 				Data: &fiber.Map{
 					"data": CredentialError.Error()}})
 	}
-
-	tokenstring, err := secure.GenerateJWT(res.Email, res.Name)
+	makes := &models.GetDataToken{
+		Id:    res.Id,
+		Email: res.Email,
+		Name:  res.Name,
+	}
+	tokenstring, err := secure.GenerateJWT(makes, 15)
 	if err != nil {
 		return c.Status(http.StatusBadRequest).JSON(
 			responses.UserResponse{
@@ -125,12 +129,30 @@ func SignIn(c *fiber.Ctx) error {
 					"data": err.Error()}})
 	}
 
+	c.Cookie(&fiber.Cookie{
+		Name:    "token",
+		Value:   tokenstring,
+		Expires: time.Now().Add(time.Minute * 15),
+	})
+
 	return c.Status(http.StatusOK).JSON(responses.UserResponse{
 		Status:  http.StatusOK,
 		Message: "success",
 		Data: &fiber.Map{
-			"data":  res.Name,
-			"token": tokenstring}})
+			"data": res.Name}})
+}
+
+func Logout(c *fiber.Ctx) error {
+	c.Cookie(&fiber.Cookie{
+		Name:   "token",
+		MaxAge: -1,
+	})
+
+	return c.Status(http.StatusOK).JSON(responses.UserResponse{
+		Status:  http.StatusOK,
+		Message: "success",
+		Data: &fiber.Map{
+			"token": "expired"}})
 }
 
 func GetAUser(c *fiber.Ctx) error {

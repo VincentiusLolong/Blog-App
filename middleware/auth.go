@@ -2,36 +2,37 @@ package middleware
 
 import (
 	"fiber-mongo-api/controllers/secure"
-	"strings"
+	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 func Auth() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		token := c.Request().Header.Peek("Authorization")
+		token := c.Cookies("token")
 
-		split := strings.Split(string(token[:]), " ")
+		fmt.Println(token)
 
-		if split[0] != "Bearer" {
-			return c.Status(fiber.StatusForbidden).JSON(&fiber.Map{
-				"status":  "ERROR",
-				"message": "invalid authorization",
-			})
-		}
-		data, claim := secure.ValidateToken(string(split[1]))
+		// split := strings.Split(string(token[:]), " ")
+
+		// if split[0] != "Bearer" {
+		// 	return c.Status(fiber.StatusForbidden).JSON(&fiber.Map{
+		// 		"status":  "ERROR",
+		// 		"message": "invalid authorization",
+		// 	})
+		// }
+		data, claim := secure.ValidateToken(string(token))
 		if claim != nil {
 			return c.Status(fiber.StatusForbidden).JSON(&fiber.Map{
 				"status":  "ERROR",
 				"message": claim.Error(),
 			})
 		}
-		// // id := userClaims["id"].(string)
+		id := data["id"].(string)
 
-		c.Locals("token", split[1])
-		c.Locals("email", data["Email"])
-		c.Locals("name", data["Name"])
-		// c.Locals("user_email", email)
+		// c.Locals("token", split[1])
+		c.Locals("id", id)
+
 		return c.Next()
 	}
 }

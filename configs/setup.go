@@ -38,3 +38,7 @@ func GetCollection(collectionName string) *mongo.Collection {
 	collection := ConnectDB().Database(AllEnv("DATABASE")).Collection(collectionName)
 	return collection
 }
+
+func UserCollection() *mongo.Collection {
+	return GetCollection(AllEnv("CONTENTCOLLECTION"))
+}
