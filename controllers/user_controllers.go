@@ -7,6 +7,7 @@ import (
 	"fiber-mongo-api/controllers/secure"
 	"fiber-mongo-api/models"
 	"fiber-mongo-api/responses"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -155,7 +156,7 @@ func Logout(c *fiber.Ctx) error {
 			"token": "expired"}})
 }
 
-func GetAUser(c *fiber.Ctx) error {
+func GetMyAccountProfile(c *fiber.Ctx) error {
 	a, b := contectx()
 	userId := c.Params("userId")
 	var user models.User
@@ -170,18 +171,24 @@ func GetAUser(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(responses.UserResponse{Status: http.StatusOK, Message: "success", Data: &fiber.Map{"data": user}})
 }
 
-func DeleteAUser(c *fiber.Ctx) error {
+func DeleteMyAccount(c *fiber.Ctx) error {
 	a, b := contectx()
-	userId := c.Params("userId")
+	userId := c.Locals("id")
 	defer b()
 
-	objId, _ := primitive.ObjectIDFromHex(userId)
+	objId, _ := primitive.ObjectIDFromHex(fmt.Sprintf("%v", userId))
 	filter := bson.D{{Key: "id", Value: objId}}
+
 	result, err := userCollection.DeleteOne(a, filter)
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{Status: http.StatusInternalServerError, Message: "error", Data: &fiber.Map{"data": err.Error()}})
+		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{
+			Status:  http.StatusInternalServerError,
+			Message: "error",
+			Data:    &fiber.Map{"data": err.Error()}})
 	}
-	return c.Status(http.StatusOK).JSON(responses.UserResponse{Status: http.StatusOK, Message: "success", Data: &fiber.Map{"data": result}})
+	return c.Status(http.StatusOK).JSON(responses.UserResponse{
+		Status:  http.StatusOK,
+		Message: "success", Data: &fiber.Map{"data": result}})
 }
 
 func EditAUser(c *fiber.Ctx) error {
