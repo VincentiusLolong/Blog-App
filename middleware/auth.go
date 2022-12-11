@@ -12,7 +12,6 @@ func Auth() func(*fiber.Ctx) error {
 		token := c.Cookies("token")
 
 		fmt.Println(token)
-
 		// split := strings.Split(string(token[:]), " ")
 
 		// if split[0] != "Bearer" {

@@ -15,7 +15,7 @@ func contectx() (context.Context, context.CancelFunc) {
 
 func ConnectRedis() *redis.Client {
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     "127.0.0.1:6379",
 		Password: "",
 		DB:       0,
 	})
@@ -38,13 +38,13 @@ func RedisGet(id string) (string, error) {
 	return val, nil
 }
 
-func RedisSet(id, token string, ttl time.Duration) error {
+func RedisSet(id, token string) error {
 	a, b := contectx()
 	defer b()
 	if err != nil {
 		log.Fatal(err)
 	}
-	err := ConnectRedis().Set(a, id, token, ttl).Err()
+	err := ConnectRedis().Set(a, id, token, 30*24*time.Hour).Err()
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -115,12 +115,10 @@ func SignIn(c *fiber.Ctx) error {
 				Data: &fiber.Map{
 					"data": CredentialError.Error()}})
 	}
-	makes := &models.GetDataToken{
-		Id:    res.Id,
-		Email: res.Email,
-		Name:  res.Name,
-	}
-	tokenstring, err := secure.GenerateJWT(makes, 15)
+
+	rt, err := secure.GenerateJWT(&models.RefreshDataToken{
+		Id: res.Id,
+	}, 43200)
 	if err != nil {
 		return c.Status(http.StatusBadRequest).JSON(
 			responses.UserResponse{
@@ -130,9 +128,25 @@ func SignIn(c *fiber.Ctx) error {
 					"data": err.Error()}})
 	}
 
+	t, err := secure.GenerateJWT(&models.GetDataToken{
+		Id:    res.Id,
+		Email: res.Email,
+		Name:  res.Name,
+	}, 5)
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(
+			responses.UserResponse{
+				Status:  http.StatusBadRequest,
+				Message: "error",
+				Data: &fiber.Map{
+					"data": err.Error()}})
+	}
+
+	configs.RedisSet(res.Id.Hex(), rt)
+
 	c.Cookie(&fiber.Cookie{
 		Name:    "token",
-		Value:   tokenstring,
+		Value:   t,
 		Expires: time.Now().Add(time.Minute * 15),
 	})
 
@@ -140,7 +154,7 @@ func SignIn(c *fiber.Ctx) error {
 		Status:  http.StatusOK,
 		Message: "success",
 		Data: &fiber.Map{
-			"data": res.Name}})
+			"data": rt}})
 }
 
 func Logout(c *fiber.Ctx) error {

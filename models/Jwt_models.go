@@ -20,3 +20,7 @@ type GetDataToken struct {
 	Email string             `json:"email,omitempty" validate:"required"`
 	Name  string             `json:"password,omitempty" validate:"required"`
 }
+
+type RefreshDataToken struct {
+	Id primitive.ObjectID `json:"id,omitempty"`
+}
