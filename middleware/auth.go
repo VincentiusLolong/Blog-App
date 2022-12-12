@@ -2,16 +2,13 @@ package middleware
 
 import (
 	"fiber-mongo-api/controllers/secure"
-	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 func Auth() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		token := c.Cookies("token")
-
-		fmt.Println(token)
+		token := c.Cookies("logged_in")
 		// split := strings.Split(string(token[:]), " ")
 
 		// if split[0] != "Bearer" {

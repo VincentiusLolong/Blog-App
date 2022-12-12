@@ -18,6 +18,15 @@ func HashPassword(u *models.User, password string) error {
 	return nil
 }
 
+func HashSessionPassword(u *models.Login, password string) error {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	if err != nil {
+		return err
+	}
+	u.Password = string(bytes)
+	return nil
+}
+
 func CheckPassword(u *models.User, providedPassword string) error {
 	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(providedPassword))
 	if err != nil {

@@ -50,3 +50,13 @@ func RedisSet(id, token string) error {
 	}
 	return nil
 }
+
+func RedisDelete(id string) error {
+	a, b := contectx()
+	defer b()
+	err := ConnectRedis().Del(a, id).Err()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return nil
+}

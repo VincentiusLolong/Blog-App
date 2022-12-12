@@ -80,6 +80,15 @@ func SignIn(c *fiber.Ctx) error {
 	a, b := contectx()
 	defer b()
 
+	loggedInCookie := c.Cookies("logged_in")
+	if loggedInCookie != "" {
+		return c.Status(http.StatusOK).JSON(responses.UserResponse{
+			Status:  http.StatusBadRequest,
+			Message: "you're already login",
+			Data: &fiber.Map{
+				"statusLogin": "already"}})
+	}
+
 	var signin models.Login
 	if err := c.BodyParser(&signin); err != nil {
 		return c.Status(http.StatusBadRequest).JSON(
@@ -132,7 +141,7 @@ func SignIn(c *fiber.Ctx) error {
 		Id:    res.Id,
 		Email: res.Email,
 		Name:  res.Name,
-	}, 5)
+	}, 15)
 	if err != nil {
 		return c.Status(http.StatusBadRequest).JSON(
 			responses.UserResponse{
@@ -142,10 +151,17 @@ func SignIn(c *fiber.Ctx) error {
 					"data": err.Error()}})
 	}
 
-	configs.RedisSet(res.Id.Hex(), rt)
+	RedisSet := configs.RedisSet(res.Id.Hex(), rt)
+	if RedisSet != nil {
+		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{
+			Status:  http.StatusInternalServerError,
+			Message: "error",
+			Data: &fiber.Map{
+				"data": RedisSet.Error()}})
+	}
 
 	c.Cookie(&fiber.Cookie{
-		Name:    "token",
+		Name:    "logged_in",
 		Value:   t,
 		Expires: time.Now().Add(time.Minute * 15),
 	})
@@ -154,14 +170,25 @@ func SignIn(c *fiber.Ctx) error {
 		Status:  http.StatusOK,
 		Message: "success",
 		Data: &fiber.Map{
-			"data": rt}})
+			"refreshtoken": rt,
+			"name":         res.Name}})
 }
 
 func Logout(c *fiber.Ctx) error {
+	str := fmt.Sprintf("%v", c.Locals("id"))
 	c.Cookie(&fiber.Cookie{
-		Name:   "token",
+		Name:   "logged_in",
 		MaxAge: -1,
 	})
+
+	RedisDel := configs.RedisDelete(str)
+	if RedisDel != nil {
+		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{
+			Status:  http.StatusInternalServerError,
+			Message: "error",
+			Data: &fiber.Map{
+				"data": RedisDel.Error()}})
+	}
 
 	return c.Status(http.StatusOK).JSON(responses.UserResponse{
 		Status:  http.StatusOK,
