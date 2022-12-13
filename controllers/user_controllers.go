@@ -176,6 +176,7 @@ func SignIn(c *fiber.Ctx) error {
 
 func Logout(c *fiber.Ctx) error {
 	str := fmt.Sprintf("%v", c.Locals("id"))
+
 	c.Cookie(&fiber.Cookie{
 		Name:   "logged_in",
 		MaxAge: -1,
@@ -199,45 +200,57 @@ func Logout(c *fiber.Ctx) error {
 
 func GetMyAccountProfile(c *fiber.Ctx) error {
 	a, b := contectx()
-	userId := c.Params("userId")
-	var user models.User
+	str := fmt.Sprintf("%v", c.Locals("id"))
 	defer b()
 
-	objId, _ := primitive.ObjectIDFromHex(userId)
+	var user models.User
+
+	objId, _ := primitive.ObjectIDFromHex(str)
 	err := userCollection.FindOne(a, bson.M{"id": objId}).Decode(&user)
+
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{Status: http.StatusInternalServerError, Message: "error", Data: &fiber.Map{"data": err.Error()}})
+		return c.Status(http.StatusInternalServerError).JSON(
+			responses.UserResponse{
+				Status:  http.StatusInternalServerError,
+				Message: "error",
+				Data:    &fiber.Map{"data": err.Error()}})
 	}
 
-	return c.Status(http.StatusOK).JSON(responses.UserResponse{Status: http.StatusOK, Message: "success", Data: &fiber.Map{"data": user}})
+	return c.Status(http.StatusOK).JSON(responses.UserResponse{
+		Status:  http.StatusOK,
+		Message: "success",
+		Data:    &fiber.Map{"data": user}})
 }
 
 func DeleteMyAccount(c *fiber.Ctx) error {
 	a, b := contectx()
-	userId := c.Locals("id")
+	str := fmt.Sprintf("%v", c.Locals("id"))
 	defer b()
 
-	objId, _ := primitive.ObjectIDFromHex(fmt.Sprintf("%v", userId))
+	objId, _ := primitive.ObjectIDFromHex(str)
 	filter := bson.D{{Key: "id", Value: objId}}
 
 	result, err := userCollection.DeleteOne(a, filter)
+
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{
 			Status:  http.StatusInternalServerError,
 			Message: "error",
 			Data:    &fiber.Map{"data": err.Error()}})
 	}
+
 	return c.Status(http.StatusOK).JSON(responses.UserResponse{
 		Status:  http.StatusOK,
 		Message: "success", Data: &fiber.Map{"data": result}})
 }
 
-func EditAUser(c *fiber.Ctx) error {
+func EditMyPorfile(c *fiber.Ctx) error {
 	a, b := contectx()
-	orgs, about, userId := c.Params("orgs"), c.Params("about"), c.Params("userId")
+	str := fmt.Sprintf("%v", c.Locals("id"))
+	orgs, about := c.Params("orgs"), c.Params("about")
 	defer b()
 
-	objId, _ := primitive.ObjectIDFromHex(userId)
+	objId, _ := primitive.ObjectIDFromHex(str)
 	filter := bson.D{{Key: "id", Value: objId}}
 	update := bson.D{{Key: "$set", Value: bson.D{{Key: "orgs", Value: orgs}, {Key: "about", Value: about}}}}
 
