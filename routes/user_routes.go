@@ -14,9 +14,10 @@ func UserRoute(app *fiber.App) {
 	UserRoute.Post("/user/register", controllers.CreateUser)
 	UserRoute.Post("/user/signin", controllers.SignIn)
 	secured := UserRoute.Group("/secured").Use(middleware.Auth())
-	secured.Get("/ping", controllers.Ping)
-	secured.Post("/logout", controllers.Logout)
-	secured.Delete("/delete", controllers.DeleteMyAccount)
+	secured.Get("user/ping", controllers.Ping)
+	secured.Post("user/logout", controllers.Logout)
+	secured.Delete("user/delete", controllers.DeleteMyAccount)
+	secured.Get("user/Get", controllers.GetMyAccountProfile)
 
 	// //=============         Public        =================
 	// // find, edit, delete many by name (many)
