@@ -239,6 +239,20 @@ func DeleteMyAccount(c *fiber.Ctx) error {
 			Data:    &fiber.Map{"data": err.Error()}})
 	}
 
+	c.Cookie(&fiber.Cookie{
+		Name:   "logged_in",
+		MaxAge: -1,
+	})
+
+	RedisDel := configs.RedisDelete(str)
+	if RedisDel != nil {
+		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{
+			Status:  http.StatusInternalServerError,
+			Message: "error",
+			Data: &fiber.Map{
+				"data": RedisDel.Error()}})
+	}
+
 	return c.Status(http.StatusOK).JSON(responses.UserResponse{
 		Status:  http.StatusOK,
 		Message: "success", Data: &fiber.Map{"data": result}})
