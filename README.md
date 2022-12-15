@@ -1,6 +1,12 @@
-# community 
+# community image webstock
 Backend Fiber Framewrok with MongoDB and Redis
 
+✓ = Done
+? = On Progress
+- = Plan
+
 Task : 
--. implement RabbitMQ
--. OTP
+-. RefreshToken Redis   (✓)
+-. Mongo Content        (?)
+-. image storage        (-)
+-. SuperUser            (-)
