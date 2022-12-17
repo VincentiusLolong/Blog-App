@@ -13,6 +13,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/session"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -20,6 +21,10 @@ import (
 
 var userCollection *mongo.Collection = configs.GetCollection(configs.AllEnv("CONTENTCOLLECTION"))
 var validate = validator.New()
+var Store = session.New(session.Config{
+	Expiration:     15 * time.Minute,
+	CookieHTTPOnly: true,
+})
 
 func contectx() (context.Context, context.CancelFunc) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -79,15 +84,23 @@ func CreateUser(c *fiber.Ctx) error {
 func SignIn(c *fiber.Ctx) error {
 	a, b := contectx()
 	defer b()
-
-	loggedInCookie := c.Cookies("logged_in")
-	if loggedInCookie != "" {
-		return c.Status(http.StatusOK).JSON(responses.UserResponse{
-			Status:  http.StatusBadRequest,
-			Message: "you're already login",
-			Data: &fiber.Map{
-				"statusLogin": "already"}})
+	sess, err := Store.Get(c)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(
+			responses.UserResponse{
+				Status:  http.StatusBadRequest,
+				Message: "error",
+				Data: &fiber.Map{
+					"DataNull": err.Error()}})
 	}
+	// loggedInCookie := c.Cookies("logged_in")
+	// if loggedInCookie != "" {
+	// 	return c.Status(http.StatusOK).JSON(responses.UserResponse{
+	// 		Status:  http.StatusBadRequest,
+	// 		Message: "you're already login",
+	// 		Data: &fiber.Map{
+	// 			"statusLogin": "already"}})
+	// }
 
 	var signin models.Login
 	if err := c.BodyParser(&signin); err != nil {
@@ -160,28 +173,40 @@ func SignIn(c *fiber.Ctx) error {
 				"data": RedisSet.Error()}})
 	}
 
-	c.Cookie(&fiber.Cookie{
-		Name:    "logged_in",
-		Value:   t,
-		Expires: time.Now().Add(time.Minute * 15),
-	})
+	// c.Cookie(&fiber.Cookie{
+	// 	Name:    "logged_in",
+	// 	Value:   t,
+	// 	Expires: time.Now().Add(time.Minute * 15),
+	// })
 
+	sess.Set("logged_in", t)
+
+	if err := sess.Save(); err != nil {
+		panic(err)
+	}
 	return c.Status(http.StatusOK).JSON(responses.UserResponse{
 		Status:  http.StatusOK,
 		Message: "success",
 		Data: &fiber.Map{
-			"refreshtoken": rt,
+			"refreshtoken": t,
 			"name":         res.Name}})
 }
 
 func Logout(c *fiber.Ctx) error {
+	sess, err := Store.Get(c)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(
+			responses.UserResponse{
+				Status:  http.StatusBadRequest,
+				Message: "error",
+				Data: &fiber.Map{
+					"DataNull": err.Error()}})
+	}
 	str := fmt.Sprintf("%v", c.Locals("id"))
 
-	c.Cookie(&fiber.Cookie{
-		Name:   "logged_in",
-		MaxAge: -1,
-	})
-
+	if err := sess.Destroy(); err != nil {
+		panic(err)
+	}
 	RedisDel := configs.RedisDelete(str)
 	if RedisDel != nil {
 		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{

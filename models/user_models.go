@@ -19,6 +19,17 @@ type User struct {
 	Gender   string             `json:"gender,omitempty" validate:"required"`
 }
 
+type UserPorfile struct {
+	Name   string `json:"name,omitempty" validate:"required"`
+	Age    string `json:"age,omitempty" validate:"required"`
+	Orgs   string `json:"orgs,omitempty"`
+	About  string `json:"about,omitempty"`
+	Gender string `json:"gender,omitempty" validate:"required"`
+}
+
+// type ChangePass struct{
+
+// }
 type AllContents struct {
 	Id      primitive.ObjectID `json:"id,omitempty"`
 	User_id string             `json:"user_id,omitempty"`

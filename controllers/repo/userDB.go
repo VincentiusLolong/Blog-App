@@ -45,3 +45,13 @@ func SignInDB(userLogin models.Login, a context.Context) (*models.User, error) {
 		return user, nil
 	}
 }
+
+func UserPorfileDB(a context.Context, user models.User, id string) error {
+	objId, _ := primitive.ObjectIDFromHex(id)
+	err := userCollection.FindOne(a, bson.M{"id": objId}).Decode(&user)
+	if err != nil {
+		return errors.New("cant find the account")
+	} else {
+		return nil
+	}
+}
