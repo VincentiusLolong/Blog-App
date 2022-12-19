@@ -13,18 +13,18 @@ type User struct {
 	Email    string             `json:"email,omitempty" validate:"required"`
 	Password string             `json:"password,omitempty" validate:"required"`
 	Name     string             `json:"name,omitempty" validate:"required"`
-	Age      string             `json:"age,omitempty" validate:"required"`
+	Age      string             `json:"age,omitempty"`
 	Orgs     string             `json:"orgs,omitempty"`
 	About    string             `json:"about,omitempty"`
-	Gender   string             `json:"gender,omitempty" validate:"required"`
+	Gender   string             `json:"gender,omitempty"`
 }
 
 type UserPorfile struct {
-	Name   string `json:"name,omitempty" validate:"required"`
-	Age    string `json:"age,omitempty" validate:"required"`
+	Name   string `json:"name,omitempty"`
+	Age    string `json:"age,omitempty"`
 	Orgs   string `json:"orgs,omitempty"`
 	About  string `json:"about,omitempty"`
-	Gender string `json:"gender,omitempty" validate:"required"`
+	Gender string `json:"gender,omitempty"`
 }
 
 // type ChangePass struct{
