@@ -7,6 +7,7 @@ Backend Fiber Framewrok with MongoDB and Redis
 
 Task : 
 -. RefreshToken Redis   (✓)
+-. Gomail (send Email)  (?)
 -. Mongo Content        (?)
 -. image storage        (-)
 -. SuperUser            (-)
