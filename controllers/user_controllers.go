@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"context"
+	"encoding/json"
 	"fiber-mongo-api/configs"
 	"fiber-mongo-api/controllers/repo"
 	"fiber-mongo-api/controllers/secure"
@@ -9,27 +9,11 @@ import (
 	"fiber-mongo-api/responses"
 	"fmt"
 	"net/http"
-	"time"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/session"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 )
-
-var userCollection *mongo.Collection = configs.GetCollection(configs.AllEnv("CONTENTCOLLECTION"))
-var validate = validator.New()
-var Store = session.New(session.Config{
-	Expiration:     15 * time.Minute,
-	CookieHTTPOnly: true,
-})
-
-func contectx() (context.Context, context.CancelFunc) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	return ctx, cancel
-}
 
 func CreateUser(c *fiber.Ctx) error {
 	a, b := contectx()
@@ -84,14 +68,14 @@ func CreateUser(c *fiber.Ctx) error {
 func SignIn(c *fiber.Ctx) error {
 	a, b := contectx()
 	defer b()
-	sess, err := Store.Get(c)
-	if err != nil {
+	var allsession, sessionerr = Store.Get(c)
+	if sessionerr != nil {
 		return c.Status(http.StatusInternalServerError).JSON(
 			responses.UserResponse{
 				Status:  http.StatusBadRequest,
 				Message: "error",
 				Data: &fiber.Map{
-					"DataNull": err.Error()}})
+					"DataNull": sessionerr.Error()}})
 	}
 	// loggedInCookie := c.Cookies("logged_in")
 	// if loggedInCookie != "" {
@@ -179,9 +163,9 @@ func SignIn(c *fiber.Ctx) error {
 	// 	Expires: time.Now().Add(time.Minute * 15),
 	// })
 
-	sess.Set("logged_in", t)
+	allsession.Set("logged_in", t)
 
-	if err := sess.Save(); err != nil {
+	if err := allsession.Save(); err != nil {
 		panic(err)
 	}
 	return c.Status(http.StatusOK).JSON(responses.UserResponse{
@@ -193,18 +177,18 @@ func SignIn(c *fiber.Ctx) error {
 }
 
 func Logout(c *fiber.Ctx) error {
-	sess, err := Store.Get(c)
-	if err != nil {
+	var allsession, sessionerr = Store.Get(c)
+	if sessionerr != nil {
 		return c.Status(http.StatusInternalServerError).JSON(
 			responses.UserResponse{
 				Status:  http.StatusBadRequest,
 				Message: "error",
 				Data: &fiber.Map{
-					"DataNull": err.Error()}})
+					"DataNull": sessionerr.Error()}})
 	}
 	str := fmt.Sprintf("%v", c.Locals("id"))
 
-	if err := sess.Destroy(); err != nil {
+	if err := allsession.Destroy(); err != nil {
 		panic(err)
 	}
 	RedisDel := configs.RedisDelete(str)
@@ -226,6 +210,7 @@ func Logout(c *fiber.Ctx) error {
 func GetMyAccountProfile(c *fiber.Ctx) error {
 	a, b := contectx()
 	str := fmt.Sprintf("%v", c.Locals("id"))
+
 	defer b()
 
 	var user models.User
@@ -248,6 +233,15 @@ func GetMyAccountProfile(c *fiber.Ctx) error {
 }
 
 func DeleteMyAccount(c *fiber.Ctx) error {
+	var allsession, sessionerr = Store.Get(c)
+	if sessionerr != nil {
+		return c.Status(http.StatusInternalServerError).JSON(
+			responses.UserResponse{
+				Status:  http.StatusBadRequest,
+				Message: "error",
+				Data: &fiber.Map{
+					"DataNull": sessionerr.Error()}})
+	}
 	a, b := contectx()
 	str := fmt.Sprintf("%v", c.Locals("id"))
 	defer b()
@@ -264,10 +258,9 @@ func DeleteMyAccount(c *fiber.Ctx) error {
 			Data:    &fiber.Map{"data": err.Error()}})
 	}
 
-	c.Cookie(&fiber.Cookie{
-		Name:   "logged_in",
-		MaxAge: -1,
-	})
+	if err := allsession.Destroy(); err != nil {
+		panic(err)
+	}
 
 	RedisDel := configs.RedisDelete(str)
 	if RedisDel != nil {
@@ -284,20 +277,55 @@ func DeleteMyAccount(c *fiber.Ctx) error {
 }
 
 func EditMyPorfile(c *fiber.Ctx) error {
+	var edit models.UserPorfile
 	a, b := contectx()
 	str := fmt.Sprintf("%v", c.Locals("id"))
-	orgs, about := c.Params("orgs"), c.Params("about")
+	// orgs, about := c.Params("orgs"), c.Params("about")
 	defer b()
+
+	if err := c.BodyParser(&edit); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(
+			responses.UserResponse{
+				Status:  http.StatusBadRequest,
+				Message: "error",
+				Data: &fiber.Map{
+					"DataNull": err.Error()}})
+	}
+	fmt.Println(edit.About)
+	userJson, err := json.Marshal(edit)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{
+			Status:  http.StatusInternalServerError,
+			Message: "error",
+			Data:    &fiber.Map{"data": err.Error()}})
+	}
+	// var jsonData = []byte(`%v`,userJson)
+	var data map[string]interface{}
+	if err := json.Unmarshal(userJson, &data); err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{
+			Status:  http.StatusInternalServerError,
+			Message: "error",
+			Data:    &fiber.Map{"data": err.Error()}})
+	}
+
+	bsondata := bson.M(data)
+	fmt.Println("wahatw", bsondata)
 
 	objId, _ := primitive.ObjectIDFromHex(str)
 	filter := bson.D{{Key: "id", Value: objId}}
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "orgs", Value: orgs}, {Key: "about", Value: about}}}}
+	update := bson.D{{Key: "$set", Value: bsondata}}
 
 	result, err := userCollection.UpdateOne(a, filter, update)
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{Status: http.StatusInternalServerError, Message: "error", Data: &fiber.Map{"data": err.Error()}})
+		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{
+			Status:  http.StatusInternalServerError,
+			Message: "error",
+			Data:    &fiber.Map{"data": err.Error()}})
 	}
-	return c.Status(http.StatusOK).JSON(responses.UserResponse{Status: http.StatusOK, Message: "success", Data: &fiber.Map{"data": result}})
+	return c.Status(http.StatusOK).JSON(responses.UserResponse{
+		Status:  http.StatusOK,
+		Message: "success",
+		Data:    &fiber.Map{"data": result}})
 }
 
 func Alluserbyage(c *fiber.Ctx) error {
