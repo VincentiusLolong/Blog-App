@@ -5,7 +5,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/go-redis/redis/v9"
+	redisClient "github.com/go-redis/redis/v9"
+	// redisStore "github.com/gofiber/storage/redis"
 )
 
 func contectx() (context.Context, context.CancelFunc) {
@@ -13,8 +14,17 @@ func contectx() (context.Context, context.CancelFunc) {
 	return ctx, cancel
 }
 
-func ConnectRedis() *redis.Client {
-	rdb := redis.NewClient(&redis.Options{
+//	func Redisstore() *redisStore.Storage {
+//		client := redisStore.New(redisStore.Config{
+//			Host: "127.0.0.1:6379",
+//		})
+//		if client != nil {
+//			log.Fatal(err)
+//		}
+//		return client
+//	}
+func ConnectRedis() *redisClient.Client {
+	rdb := redisClient.NewClient(&redisClient.Options{
 		Addr:     "127.0.0.1:6379",
 		Password: "",
 		DB:       0,
