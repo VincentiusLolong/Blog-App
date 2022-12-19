@@ -280,7 +280,6 @@ func EditMyPorfile(c *fiber.Ctx) error {
 	var edit models.UserPorfile
 	a, b := contectx()
 	str := fmt.Sprintf("%v", c.Locals("id"))
-	// orgs, about := c.Params("orgs"), c.Params("about")
 	defer b()
 
 	if err := c.BodyParser(&edit); err != nil {
@@ -299,7 +298,7 @@ func EditMyPorfile(c *fiber.Ctx) error {
 			Message: "error",
 			Data:    &fiber.Map{"data": err.Error()}})
 	}
-	// var jsonData = []byte(`%v`,userJson)
+
 	var data map[string]interface{}
 	if err := json.Unmarshal(userJson, &data); err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{
@@ -307,15 +306,9 @@ func EditMyPorfile(c *fiber.Ctx) error {
 			Message: "error",
 			Data:    &fiber.Map{"data": err.Error()}})
 	}
-
 	bsondata := bson.M(data)
-	fmt.Println("wahatw", bsondata)
 
-	objId, _ := primitive.ObjectIDFromHex(str)
-	filter := bson.D{{Key: "id", Value: objId}}
-	update := bson.D{{Key: "$set", Value: bsondata}}
-
-	result, err := userCollection.UpdateOne(a, filter, update)
+	result, err := repo.UserEdit(a, str, bsondata)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{
 			Status:  http.StatusInternalServerError,
