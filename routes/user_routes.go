@@ -19,6 +19,8 @@ func UserRoute(app *fiber.App) {
 	secured.Delete("user/delete", controllers.DeleteMyAccount)
 	secured.Get("user/Get", controllers.GetMyAccountProfile)
 	secured.Put("user/edit/:orgs/:about", controllers.EditMyPorfile)
+	secured.Post("user/addcontent", controllers.AddContent)
+	secured.Post("user/findcontent", controllers.FindContent)
 
 	// //=============         Public        =================
 	// // find, edit, delete many by name (many)
