@@ -15,11 +15,9 @@ func Auth() func(*fiber.Ctx) error {
 			panic(err)
 		}
 
-		name := sess.Get("logged_in")
+		name := sess.Get("logged_in") // Add Err
 		fmt.Println(name)
 		str := fmt.Sprintf("%v", name)
-		// token := c.Cookies("logged_in")
-		// split := token.Split(string(token[:]), " ") // change split cookies
 
 		data, claim := secure.ValidateToken(str)
 		if claim != nil {
@@ -28,10 +26,15 @@ func Auth() func(*fiber.Ctx) error {
 				"message": claim.Error(),
 			})
 		}
-		id := data["id"].(string)
 
-		// c.Locals("token", split[1])
-		// c.Locals("test", name)
+		id := data["id"].(string)
+		if id == "000000000000000000000000" {
+			return c.Status(fiber.StatusForbidden).JSON(&fiber.Map{
+				"status":  "ERROR",
+				"message": "Error : Cant Find User_id",
+			})
+		}
+
 		c.Locals("id", id)
 
 		return c.Next()
