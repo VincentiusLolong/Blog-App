@@ -9,5 +9,5 @@ Task :
 -. RefreshToken Redis   (✓)
 -. Gomail (send Email)  (?)
 -. Mongo Content        (?)
--. image storage        (-)
+-. image storage        (?)
 -. SuperUser            (-)
