@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"fiber-mongo-api/configs"
 	"fiber-mongo-api/controllers/repo"
 	"fiber-mongo-api/controllers/secure"
@@ -123,7 +122,7 @@ func SignIn(c *fiber.Ctx) error {
 	}
 
 	rt, err := secure.GenerateJWT(&models.RefreshDataToken{
-		Id: res.Id,
+		Id: res.User_Id,
 	}, 43200)
 	if err != nil {
 		return c.Status(http.StatusBadRequest).JSON(
@@ -135,7 +134,7 @@ func SignIn(c *fiber.Ctx) error {
 	}
 
 	t, err := secure.GenerateJWT(&models.GetDataToken{
-		Id:    res.Id,
+		Id:    res.User_Id,
 		Email: res.Email,
 		Name:  res.Name,
 	}, 15)
@@ -148,7 +147,7 @@ func SignIn(c *fiber.Ctx) error {
 					"data": err.Error()}})
 	}
 
-	RedisSet := configs.RedisSet(res.Id.Hex(), rt)
+	RedisSet := configs.RedisSet(res.User_Id.Hex(), rt)
 	if RedisSet != nil {
 		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{
 			Status:  http.StatusInternalServerError,
@@ -216,8 +215,7 @@ func GetMyAccountProfile(c *fiber.Ctx) error {
 	var user models.User
 
 	objId, _ := primitive.ObjectIDFromHex(str)
-	err := userCollection.FindOne(a, bson.M{"id": objId}).Decode(&user)
-
+	err := userCollection.FindOne(a, bson.M{"user_id": objId}).Decode(&user)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(
 			responses.UserResponse{
@@ -290,8 +288,8 @@ func EditMyPorfile(c *fiber.Ctx) error {
 				Data: &fiber.Map{
 					"DataNull": err.Error()}})
 	}
-	fmt.Println(edit.About)
-	userJson, err := json.Marshal(edit)
+
+	data, err := ParseJson(edit)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{
 			Status:  http.StatusInternalServerError,
@@ -299,16 +297,7 @@ func EditMyPorfile(c *fiber.Ctx) error {
 			Data:    &fiber.Map{"data": err.Error()}})
 	}
 
-	var data map[string]interface{}
-	if err := json.Unmarshal(userJson, &data); err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{
-			Status:  http.StatusInternalServerError,
-			Message: "error",
-			Data:    &fiber.Map{"data": err.Error()}})
-	}
-	bsondata := bson.M(data)
-
-	result, err := repo.UserEdit(a, str, bsondata)
+	result, err := repo.UserEdit(a, str, data)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{
 			Status:  http.StatusInternalServerError,
