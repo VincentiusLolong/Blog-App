@@ -14,15 +14,6 @@ func contectx() (context.Context, context.CancelFunc) {
 	return ctx, cancel
 }
 
-//	func Redisstore() *redisStore.Storage {
-//		client := redisStore.New(redisStore.Config{
-//			Host: "127.0.0.1:6379",
-//		})
-//		if client != nil {
-//			log.Fatal(err)
-//		}
-//		return client
-//	}
 func ConnectRedis() *redisClient.Client {
 	rdb := redisClient.NewClient(&redisClient.Options{
 		Addr:     "127.0.0.1:6379",
