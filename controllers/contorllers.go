@@ -17,7 +17,7 @@ import (
 var userCollection *mongo.Collection = configs.GetCollection(configs.AllEnv("THECOLLECTION"))
 var validate = validator.New()
 var Store = session.New(session.Config{
-	Expiration:     15 * time.Minute,
+	Expiration:     168 * time.Hour,
 	CookieHTTPOnly: true,
 })
 
