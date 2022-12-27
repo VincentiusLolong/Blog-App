@@ -8,8 +8,6 @@ import (
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func AddContent(c *fiber.Ctx) error {
@@ -68,20 +66,23 @@ func AddContent(c *fiber.Ctx) error {
 // 			"data": ""}})
 // }
 
-// TODO, Chacnge struct find to find By time
 func FindContent(c *fiber.Ctx) error {
-	title := c.Params("title")
-	str := fmt.Sprintf("%v", c.Locals("id"))
-	objId, _ := primitive.ObjectIDFromHex(str)
-
 	a, b := contectx()
+	str := fmt.Sprintf("%v", c.Locals("id"))
 	defer b()
 
-	res := userCollection.FindOne(a, bson.M{"user_id": objId, "title": title})
+	data, err := repo.FindContent(a, str)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{
+			Status:  http.StatusCreated,
+			Message: "can't find content",
+			Data: &fiber.Map{
+				"data": err.Error()}})
+	}
 
 	return c.Status(http.StatusCreated).JSON(responses.UserResponse{
 		Status:  http.StatusCreated,
 		Message: "success",
 		Data: &fiber.Map{
-			"data": res}})
+			"data": data}})
 }
