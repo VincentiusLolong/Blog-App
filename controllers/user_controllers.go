@@ -297,8 +297,8 @@ func EditMyPorfile(c *fiber.Ctx) error {
 			Data:    &fiber.Map{"data": err.Error()}})
 	}
 
-	result, err := repo.UserEdit(a, str, data)
-	if err != nil {
+	result, errs := repo.UserEdit(a, str, data)
+	if errs != nil {
 		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{
 			Status:  http.StatusInternalServerError,
 			Message: "error",
