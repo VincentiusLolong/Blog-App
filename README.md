@@ -1,18 +1,18 @@
 # Blog App
-Bakend web-based blog application design using go
-Tools Used :
+## Bakend web-based blog application design using go
+### Tools Used :
 - MongoDB
 - Redis
 - Json Web Token (JWT)
 - Fiber (Framework)
 
-
-✓ = Done
-? = On Progress
-- = Plan
-Task : 
+### Note :
+- ✓ = Done
+- ? = On Progress
+- _ = Plan
+#### Task : 
 - RefreshToken Redis   (✓)
 - Gomail (send Email)  (?)
 - Mongo Content        (?)
 - image storage        (?) 
-- SuperUser            (-)
+- SuperUser            (_)
