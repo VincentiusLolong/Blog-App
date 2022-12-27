@@ -58,13 +58,47 @@ func AddContent(c *fiber.Ctx) error {
 // 			"data": ""}})
 // }
 
-// func EditContent(c *fiber.Ctx) error {
-// 	return c.Status(http.StatusCreated).JSON(responses.UserResponse{
-// 		Status:  http.StatusCreated,
-// 		Message: "success",
-// 		Data: &fiber.Map{
-// 			"data": ""}})
-// }
+// Continue this
+func EditContent(c *fiber.Ctx) error {
+	content_id := c.Params("content_id")
+	a, b := contectx()
+	str := fmt.Sprintf("%v", c.Locals("id"))
+	defer b()
+
+	var editcontent models.AllContents
+
+	if err := c.BodyParser(&editcontent); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(
+			responses.UserResponse{
+				Status:  http.StatusBadRequest,
+				Message: "error",
+				Data: &fiber.Map{
+					"DataNull": err.Error()}})
+	}
+
+	primitive, err := ParseJson(editcontent)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(
+			responses.UserResponse{
+				Status:  http.StatusBadRequest,
+				Message: "error",
+				Data: &fiber.Map{
+					"DataNull": err.Error()}})
+	}
+	fmt.Println(primitive)
+	result, errs := repo.ContentEdit(a, str, content_id, primitive)
+	if errs != nil {
+		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{
+			Status:  http.StatusInternalServerError,
+			Message: "error",
+			Data:    &fiber.Map{"data": err.Error()}})
+	}
+	return c.Status(http.StatusCreated).JSON(responses.UserResponse{
+		Status:  http.StatusCreated,
+		Message: "success",
+		Data: &fiber.Map{
+			"data": result}})
+}
 
 func FindContent(c *fiber.Ctx) error {
 	a, b := contectx()
