@@ -5,6 +5,7 @@ import (
 	"fiber-mongo-api/configs"
 	"fiber-mongo-api/models"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -29,4 +30,21 @@ func CreateContent(addcontents models.AllContents, str string, a context.Context
 	} else {
 		return result, nil
 	}
+}
+
+func FindContent(a context.Context, str string) ([]models.AllContents, error) {
+	var allcontent []models.AllContents
+
+	objId, _ := primitive.ObjectIDFromHex(str)
+	cursor, err := contentCollection.Find(a, bson.M{"user_id": objId})
+	if err != nil {
+		return nil, err
+	}
+
+	err = cursor.All(a, &allcontent)
+	if err != nil {
+		return nil, err
+	}
+
+	return allcontent, nil
 }

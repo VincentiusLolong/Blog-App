@@ -171,7 +171,7 @@ func SignIn(c *fiber.Ctx) error {
 		Status:  http.StatusOK,
 		Message: "success",
 		Data: &fiber.Map{
-			"refreshtoken": t,
+			"Access Token": t,
 			"name":         res.Name}})
 }
 

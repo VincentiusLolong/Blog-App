@@ -15,6 +15,8 @@ import (
 )
 
 var userCollection *mongo.Collection = configs.GetCollection(configs.AllEnv("THECOLLECTION"))
+
+// var contentCollection *mongo.Collection = configs.GetCollection(configs.AllEnv("PXCOLLECTIONS"))
 var validate = validator.New()
 var Store = session.New(session.Config{
 	Expiration:     168 * time.Hour,
