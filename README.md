@@ -1,7 +1,7 @@
 # Blog App
 ## Bakend web-based blog application design using go
 ### Tools Used :
-- MongoDB
+- ![MongoDB](https://w7.pngwing.com/pngs/63/19/png-transparent-mongodb-database-nosql-postgresql-mongo-text-logo-business-thumbnail.png) 
 - Redis
 - Json Web Token (JWT)
 - Fiber (Framework)
