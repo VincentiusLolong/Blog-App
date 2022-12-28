@@ -44,11 +44,7 @@ func SignInDB(userLogin models.Login, a context.Context) (*models.User, error) {
 	err := userCollection.FindOne(a, bson.M{
 		"email": userLogin.Email}).Decode(&user)
 
-	if err != nil {
-		return nil, err
-	} else {
-		return user, nil
-	}
+	return user, err
 }
 
 func UserPorfileDB(a context.Context, user models.User, id string) error {
@@ -67,9 +63,6 @@ func UserEdit(a context.Context, str string, bsondata primitive.M) (*mongo.Updat
 	update := bson.D{{Key: "$set", Value: bsondata}}
 
 	result, err := userCollection.UpdateOne(a, filter, update)
-	if err != nil {
-		return nil, errors.New("cant edit")
-	} else {
-		return result, nil
-	}
+
+	return result, err
 }
