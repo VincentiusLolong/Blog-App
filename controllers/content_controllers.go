@@ -50,15 +50,29 @@ func AddContent(c *fiber.Ctx) error {
 			"data": result}})
 }
 
-// func DeleteContent(c *fiber.Ctx) error {
-// 	return c.Status(http.StatusCreated).JSON(responses.UserResponse{
-// 		Status:  http.StatusCreated,
-// 		Message: "success",
-// 		Data: &fiber.Map{
-// 			"data": ""}})
-// }
+func DeleteContent(c *fiber.Ctx) error {
+	content_id := c.Params("content_id")
+	a, b := contectx()
+	str := fmt.Sprintf("%v", c.Locals("id"))
+	defer b()
 
-// Continue this
+	data, err := repo.ContentDelete(a, str, content_id)
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(
+			responses.UserResponse{
+				Status:  http.StatusBadRequest,
+				Message: "error",
+				Data: &fiber.Map{
+					"DataNull": err.Error()}})
+	}
+
+	return c.Status(http.StatusCreated).JSON(responses.UserResponse{
+		Status:  http.StatusCreated,
+		Message: "success",
+		Data: &fiber.Map{
+			"data": data}})
+}
+
 func EditContent(c *fiber.Ctx) error {
 	content_id := c.Params("content_id")
 	a, b := contectx()
@@ -85,7 +99,7 @@ func EditContent(c *fiber.Ctx) error {
 				Data: &fiber.Map{
 					"DataNull": err.Error()}})
 	}
-	fmt.Println(primitive)
+
 	result, errs := repo.ContentEdit(a, str, content_id, primitive)
 	if errs != nil {
 		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{
