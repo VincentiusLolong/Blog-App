@@ -13,6 +13,6 @@
 #### Task : 
 - RefreshToken Redis   (✓)
 - Gomail (send Email)  (?)
-- Mongo Content        (?)
+- Mongo Content        (✓)
 - image storage        (?) 
 - SuperUser            (_)
