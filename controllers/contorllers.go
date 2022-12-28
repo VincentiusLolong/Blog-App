@@ -37,7 +37,12 @@ func ParseJson[test models.UserPorfile | models.AllContents](edit test) (primiti
 	if err := json.Unmarshal(userJson, &data); err != nil {
 		return nil, err
 	}
-	delete(data, "content_id")
-	delete(data, "user_id")
+
+	if _, ok := data["content_id"]; !ok {
+		delete(data, "user_id")
+	} else {
+		delete(data, "content_id")
+		delete(data, "user_id")
+	}
 	return bson.M(data), nil
 }
