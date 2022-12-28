@@ -2,7 +2,6 @@ package repo
 
 import (
 	"context"
-	"errors"
 	"fiber-mongo-api/configs"
 	"fiber-mongo-api/models"
 
@@ -26,11 +25,8 @@ func CreateContent(addcontents models.AllContents, str string, a context.Context
 	}
 
 	result, err := contentCollection.InsertOne(a, newContent)
-	if err != nil {
-		return nil, err
-	} else {
-		return result, nil
-	}
+	return result, err
+
 }
 
 func FindContent(a context.Context, str string) ([]models.AllContents, error) {
@@ -57,9 +53,15 @@ func ContentEdit(a context.Context, str string, cid string, bsondata primitive.M
 	update := bson.D{{Key: "$set", Value: bsondata}}
 
 	result, err := contentCollection.UpdateOne(a, filter, update)
-	if err != nil {
-		return nil, errors.New("cant edit")
-	} else {
-		return result, nil
-	}
+	return result, err
+
+}
+
+func ContentDelete(a context.Context, str, content_id string) (*mongo.DeleteResult, error) {
+	objId, _ := primitive.ObjectIDFromHex(str)
+	ctjId, _ := primitive.ObjectIDFromHex(content_id)
+	filter := bson.M{"content_id": ctjId, "user_id": objId}
+
+	result, err := contentCollection.DeleteOne(a, filter)
+	return result, err
 }
