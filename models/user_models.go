@@ -41,5 +41,8 @@ type AllContents struct {
 }
 
 type Comments struct {
-	Id primitive.ObjectID `json:"id,omitempty"`
+	Comments_id primitive.ObjectID `json:"id,omitempty"`
+	Content_Id  primitive.ObjectID `json:"content_id,omitempty"`
+	User_id     primitive.ObjectID `json:"user_id,omitempty"`
+	Comment     string             `json:"comment,omitempty" validate:"required"`
 }
