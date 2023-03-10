@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fiber-mongo-api/controllers/repo"
 	"fiber-mongo-api/models"
 	"fiber-mongo-api/responses"
 	"fmt"
@@ -10,7 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func AddContent(c *fiber.Ctx) error {
+func (ct *controller) AddContent(c *fiber.Ctx) error {
 	var addcontents models.AllContents
 	str := fmt.Sprintf("%v", c.Locals("id"))
 	a, b := contectx()
@@ -33,7 +32,7 @@ func AddContent(c *fiber.Ctx) error {
 					"data": validationErr.Error()}})
 	}
 
-	result, err := repo.CreateContent(addcontents, str, a)
+	result, err := ct.service.CreateContent(addcontents, str, a)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(
 			responses.UserResponse{
@@ -50,13 +49,13 @@ func AddContent(c *fiber.Ctx) error {
 			"data": result}})
 }
 
-func DeleteContent(c *fiber.Ctx) error {
+func (ct *controller) DeleteContent(c *fiber.Ctx) error {
 	content_id := c.Params("content_id")
 	a, b := contectx()
 	str := fmt.Sprintf("%v", c.Locals("id"))
 	defer b()
 
-	data, err := repo.ContentDelete(a, str, content_id)
+	data, err := ct.service.ContentDelete(a, str, content_id)
 	if err != nil {
 		return c.Status(http.StatusBadRequest).JSON(
 			responses.UserResponse{
@@ -73,7 +72,7 @@ func DeleteContent(c *fiber.Ctx) error {
 			"data": data}})
 }
 
-func EditContent(c *fiber.Ctx) error {
+func (ct *controller) EditContent(c *fiber.Ctx) error {
 	content_id := c.Params("content_id")
 	a, b := contectx()
 	str := fmt.Sprintf("%v", c.Locals("id"))
@@ -100,7 +99,7 @@ func EditContent(c *fiber.Ctx) error {
 					"DataNull": err.Error()}})
 	}
 
-	result, errs := repo.ContentEdit(a, str, content_id, primitive)
+	result, errs := ct.service.ContentEdit(a, str, content_id, primitive)
 	if errs != nil {
 		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{
 			Status:  http.StatusInternalServerError,
@@ -114,12 +113,12 @@ func EditContent(c *fiber.Ctx) error {
 			"data": result}})
 }
 
-func FindContent(c *fiber.Ctx) error {
+func (ct *controller) FindContent(c *fiber.Ctx) error {
 	a, b := contectx()
 	str := fmt.Sprintf("%v", c.Locals("id"))
 	defer b()
 
-	data, err := repo.FindContent(a, str)
+	data, err := ct.service.FindContent(a, str)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{
 			Status:  http.StatusCreated,

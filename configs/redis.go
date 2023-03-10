@@ -32,6 +32,7 @@ func ConnectRedis() *redisClient.Client {
 func RedisGet(id string) (string, error) {
 	a, b := contectx()
 	defer b()
+
 	val, err := ConnectRedis().Get(a, id).Result()
 	if err != nil {
 		log.Fatal(err)
@@ -42,9 +43,7 @@ func RedisGet(id string) (string, error) {
 func RedisSet(id, token string) error {
 	a, b := contectx()
 	defer b()
-	if err != nil {
-		log.Fatal(err)
-	}
+
 	err := ConnectRedis().Set(a, id, token, 30*24*time.Hour).Err()
 	if err != nil {
 		log.Fatal(err)
@@ -55,6 +54,7 @@ func RedisSet(id, token string) error {
 func RedisDelete(id string) error {
 	a, b := contectx()
 	defer b()
+
 	err := ConnectRedis().Del(a, id).Err()
 	if err != nil {
 		log.Fatal(err)

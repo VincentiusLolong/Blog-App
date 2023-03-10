@@ -3,20 +3,41 @@ package controllers
 import (
 	"context"
 	"encoding/json"
-	"fiber-mongo-api/configs"
 	"fiber-mongo-api/models"
+	"fiber-mongo-api/services"
 	"time"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var userCollection *mongo.Collection = configs.GetCollection(configs.AllEnv("THECOLLECTION"))
+type Controller interface {
+	CreateUser(c *fiber.Ctx) error
+	SignIn(c *fiber.Ctx) error
+	Logout(c *fiber.Ctx) error
+	GetMyAccountProfile(c *fiber.Ctx) error
+	DeleteMyAccount(c *fiber.Ctx) error
+	EditMyPorfile(c *fiber.Ctx) error
+	AddContent(c *fiber.Ctx) error
+	DeleteContent(c *fiber.Ctx) error
+	EditContent(c *fiber.Ctx) error
+	FindContent(c *fiber.Ctx) error
+	AddComment(c *fiber.Ctx) error
+}
 
-// var contentCollection *mongo.Collection = configs.GetCollection(configs.AllEnv("PXCOLLECTIONS"))
+type controller struct {
+	service services.SerivceDataset
+}
+
+func Control(serv services.SerivceDataset) Controller {
+	return &controller{
+		service: serv,
+	}
+}
+
 var validate = validator.New()
 var Store = session.New(session.Config{
 	Expiration:     168 * time.Hour,

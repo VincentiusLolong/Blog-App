@@ -7,11 +7,14 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var err error = godotenv.Load()
-
 func AllEnv(s string) string {
+	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-	return os.Getenv(s)
+	value, errs := os.LookupEnv(s)
+	if !errs {
+		log.Fatal("Env Variable Empty or Not available")
+	}
+	return value
 }

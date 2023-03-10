@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"fiber-mongo-api/configs"
-	"fiber-mongo-api/controllers/repo"
 	"fiber-mongo-api/controllers/secure"
 	"fiber-mongo-api/models"
 	"fiber-mongo-api/responses"
@@ -10,11 +9,9 @@ import (
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func CreateUser(c *fiber.Ctx) error {
+func (ct *controller) CreateUser(c *fiber.Ctx) error {
 	a, b := contectx()
 	var user models.User
 	defer b()
@@ -47,7 +44,7 @@ func CreateUser(c *fiber.Ctx) error {
 					"data": errs.Error()}})
 	}
 
-	res, err := repo.CreateUserDB(user, a)
+	res, err := ct.service.CreateUserDB(user, a)
 
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(
@@ -64,7 +61,7 @@ func CreateUser(c *fiber.Ctx) error {
 			"data": res}})
 }
 
-func SignIn(c *fiber.Ctx) error {
+func (ct *controller) SignIn(c *fiber.Ctx) error {
 	a, b := contectx()
 	defer b()
 	var allsession, sessionerr = Store.Get(c)
@@ -103,7 +100,7 @@ func SignIn(c *fiber.Ctx) error {
 					"ValidateErr": validationErr.Error()}})
 	}
 
-	res, err := repo.SignInDB(signin, a)
+	res, err := ct.service.SignInDB(signin, a)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{
 			Status:  http.StatusInternalServerError,
@@ -175,7 +172,7 @@ func SignIn(c *fiber.Ctx) error {
 			"name":         res.Name}})
 }
 
-func Logout(c *fiber.Ctx) error {
+func (ct *controller) Logout(c *fiber.Ctx) error {
 	var allsession, sessionerr = Store.Get(c)
 	if sessionerr != nil {
 		return c.Status(http.StatusInternalServerError).JSON(
@@ -206,16 +203,13 @@ func Logout(c *fiber.Ctx) error {
 			"token": "expired"}})
 }
 
-func GetMyAccountProfile(c *fiber.Ctx) error {
+func (ct *controller) GetMyAccountProfile(c *fiber.Ctx) error {
 	a, b := contectx()
 	str := fmt.Sprintf("%v", c.Locals("id"))
 
 	defer b()
 
-	var user models.User
-
-	objId, _ := primitive.ObjectIDFromHex(str)
-	err := userCollection.FindOne(a, bson.M{"user_id": objId}).Decode(&user)
+	data, err := ct.service.UserPorfileDB(a, str)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(
 			responses.UserResponse{
@@ -227,10 +221,10 @@ func GetMyAccountProfile(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(responses.UserResponse{
 		Status:  http.StatusOK,
 		Message: "success",
-		Data:    &fiber.Map{"data": user}})
+		Data:    &fiber.Map{"data": data}})
 }
 
-func DeleteMyAccount(c *fiber.Ctx) error {
+func (ct *controller) DeleteMyAccount(c *fiber.Ctx) error {
 	var allsession, sessionerr = Store.Get(c)
 	if sessionerr != nil {
 		return c.Status(http.StatusInternalServerError).JSON(
@@ -241,13 +235,16 @@ func DeleteMyAccount(c *fiber.Ctx) error {
 					"DataNull": sessionerr.Error()}})
 	}
 	a, b := contectx()
-	str := fmt.Sprintf("%v", c.Locals("id"))
 	defer b()
 
-	objId, _ := primitive.ObjectIDFromHex(str)
-	filter := bson.D{{Key: "id", Value: objId}}
+	str := fmt.Sprintf("%v", c.Locals("id"))
 
-	result, err := userCollection.DeleteOne(a, filter)
+	// objId, _ := primitive.ObjectIDFromHex(str)
+	// filter := bson.D{{Key: "id", Value: objId}}
+
+	// result, err := userCollection.DeleteOne(a, filter)
+
+	result, err := ct.service.DeleteAccount(a, str)
 
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{
@@ -274,7 +271,7 @@ func DeleteMyAccount(c *fiber.Ctx) error {
 		Message: "success", Data: &fiber.Map{"data": result}})
 }
 
-func EditMyPorfile(c *fiber.Ctx) error {
+func (ct *controller) EditMyPorfile(c *fiber.Ctx) error {
 	var edit models.UserPorfile
 	a, b := contectx()
 	str := fmt.Sprintf("%v", c.Locals("id"))
@@ -297,7 +294,7 @@ func EditMyPorfile(c *fiber.Ctx) error {
 			Data:    &fiber.Map{"data": err.Error()}})
 	}
 
-	result, errs := repo.UserEdit(a, str, data)
+	result, errs := ct.service.UserEdit(a, str, data)
 	if errs != nil {
 		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{
 			Status:  http.StatusInternalServerError,
@@ -310,29 +307,29 @@ func EditMyPorfile(c *fiber.Ctx) error {
 		Data:    &fiber.Map{"data": result}})
 }
 
-func Alluserbyage(c *fiber.Ctx) error {
-	a, b := contectx()
-	name, age := c.Params("name"), c.Params("age")
-	var users []models.User
-	defer b()
+// func Alluserbyage(c *fiber.Ctx) error {
+// 	a, b := contectx()
+// 	name, age := c.Params("name"), c.Params("age")
+// 	var users []models.User
+// 	defer b()
 
-	results, err := userCollection.Find(a, bson.M{"orgs": name, "age": age})
+// 	results, err := userCollection.Find(a, bson.M{"orgs": name, "age": age})
 
-	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{Status: http.StatusInternalServerError, Message: "error", Data: &fiber.Map{"data": err.Error()}})
-	}
+// 	if err != nil {
+// 		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{Status: http.StatusInternalServerError, Message: "error", Data: &fiber.Map{"data": err.Error()}})
+// 	}
 
-	defer results.Close(a)
-	for results.Next(a) {
-		var singleUser models.User
-		if err = results.Decode(&singleUser); err != nil {
-			return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{Status: http.StatusInternalServerError, Message: "error", Data: &fiber.Map{"data": err.Error()}})
-		}
+// 	defer results.Close(a)
+// 	for results.Next(a) {
+// 		var singleUser models.User
+// 		if err = results.Decode(&singleUser); err != nil {
+// 			return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{Status: http.StatusInternalServerError, Message: "error", Data: &fiber.Map{"data": err.Error()}})
+// 		}
 
-		users = append(users, singleUser)
-	}
+// 		users = append(users, singleUser)
+// 	}
 
-	return c.Status(http.StatusOK).JSON(
-		responses.UserResponse{Status: http.StatusOK, Message: "success", Data: &fiber.Map{"data": users}},
-	)
-}
+// 	return c.Status(http.StatusOK).JSON(
+// 		responses.UserResponse{Status: http.StatusOK, Message: "success", Data: &fiber.Map{"data": users}},
+// 	)
+// }

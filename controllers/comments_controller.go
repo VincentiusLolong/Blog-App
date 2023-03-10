@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fiber-mongo-api/controllers/repo"
 	"fiber-mongo-api/models"
 	"fiber-mongo-api/responses"
 	"fmt"
@@ -10,7 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func AddComment(c *fiber.Ctx) error {
+func (ct *controller) AddComment(c *fiber.Ctx) error {
 	str := fmt.Sprintf("%v", c.Locals("id"))
 	var addcomment models.Comments
 	a, b := contectx()
@@ -34,7 +33,7 @@ func AddComment(c *fiber.Ctx) error {
 					"data": validationErr.Error()}})
 	}
 
-	result, err := repo.CreateComment(a, addcomment, str)
+	result, err := ct.service.CreateComment(a, addcomment, str)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(
 			responses.UserResponse{

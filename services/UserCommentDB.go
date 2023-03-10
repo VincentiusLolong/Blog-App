@@ -1,8 +1,7 @@
-package repo
+package services
 
 import (
 	"context"
-	"fiber-mongo-api/configs"
 	"fiber-mongo-api/models"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -10,9 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var commentCollection *mongo.Collection = configs.GetCollection(configs.AllEnv("COMCOLLECTIONS"))
-
-func CreateComment(a context.Context, ContentDB models.Comments, userid string) (*mongo.InsertOneResult, error) {
+func (c *services) CreateComment(a context.Context, ContentDB models.Comments, userid string) (*mongo.InsertOneResult, error) {
 	usersId, _ := primitive.ObjectIDFromHex(userid)
 	newComment := &models.Comments{
 		Comments_id: primitive.NewObjectID(),
@@ -21,21 +18,21 @@ func CreateComment(a context.Context, ContentDB models.Comments, userid string) 
 		Comment:     ContentDB.Comment,
 	}
 
-	result, err := commentCollection.InsertOne(a, newComment)
+	result, err := c.monggose.CommentsCollection().InsertOne(a, newComment)
 	return result, err
 }
 
-func EditComment(a context.Context, commentid string, userid string, bsondata primitive.M) (*mongo.UpdateResult, error) {
+func (c *services) EditComment(a context.Context, commentid string, userid string, bsondata primitive.M) (*mongo.UpdateResult, error) {
 	commId, _ := primitive.ObjectIDFromHex(commentid)
 	uId, _ := primitive.ObjectIDFromHex(userid)
 	filter := bson.M{"content_id": commId, "user_id": uId}
 	update := bson.D{{Key: "$set", Value: bsondata}}
 
-	result, err := contentCollection.UpdateOne(a, filter, update)
+	result, err := c.monggose.CommentsCollection().UpdateOne(a, filter, update)
 	return result, err
 }
 
-func CommentHistory() {}
+//
 
 // get by rank :
 // 1. User
