@@ -23,6 +23,7 @@ type SerivceDataset interface {
 	ContentDelete(a context.Context, str, content_id string) (*mongo.DeleteResult, error)
 
 	CreateComment(a context.Context, ContentDB models.Comments, userid string) (*mongo.InsertOneResult, error)
+	EditComment(a context.Context, commentid string, userid string, bsondata primitive.M) (*mongo.UpdateResult, error)
 }
 
 type services struct {

@@ -20,8 +20,8 @@ func UserRoute(a *fiber.App) {
 	// ============       ADMIN adn User     =================
 	// find, editm delete by id (one)
 	UserRoute := a.Group("/api/V1")
-	UserRoute.Post("/user/register", con.CreateUser)
-	UserRoute.Post("/user/signin", con.SignIn)
+	UserRoute.Post("/register", con.CreateUser)
+	UserRoute.Post("/signin", con.SignIn)
 	secured := UserRoute.Group("/secured").Use(middleware.Auth())
 	secured.Post("user/logout", con.Logout)
 	secured.Delete("user/delete", con.DeleteMyAccount)
@@ -32,6 +32,8 @@ func UserRoute(a *fiber.App) {
 	secured.Put("user/editcontent/:content_id", con.EditContent)
 	secured.Delete("user/deletecontent/:content_id", con.DeleteContent)
 	secured.Post("user/addcomment", con.AddComment)
+	// secured.Delete("user/deletecomment")
+	secured.Put("user/editcomment/:comments_id", con.EditComment)
 
 	// //=============         Public        =================
 	// // find, edit, delete many by name (many)

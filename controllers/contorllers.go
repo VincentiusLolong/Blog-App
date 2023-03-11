@@ -15,17 +15,23 @@ import (
 )
 
 type Controller interface {
+	//Account
 	CreateUser(c *fiber.Ctx) error
 	SignIn(c *fiber.Ctx) error
 	Logout(c *fiber.Ctx) error
 	GetMyAccountProfile(c *fiber.Ctx) error
 	DeleteMyAccount(c *fiber.Ctx) error
 	EditMyPorfile(c *fiber.Ctx) error
+
+	//Content
 	AddContent(c *fiber.Ctx) error
 	DeleteContent(c *fiber.Ctx) error
 	EditContent(c *fiber.Ctx) error
 	FindContent(c *fiber.Ctx) error
+
+	//Comments
 	AddComment(c *fiber.Ctx) error
+	EditComment(c *fiber.Ctx) error
 }
 
 type controller struct {
@@ -49,7 +55,7 @@ func contectx() (context.Context, context.CancelFunc) {
 	return ctx, cancel
 }
 
-func ParseJson[test models.UserPorfile | models.AllContents](edit test) (primitive.M, error) {
+func ParseJson[test models.UserPorfile | models.AllContents | models.Comments](edit test) (primitive.M, error) {
 	data := make(map[string]interface{})
 	userJson, err := json.Marshal(edit)
 	if err != nil {
@@ -64,6 +70,7 @@ func ParseJson[test models.UserPorfile | models.AllContents](edit test) (primiti
 	} else {
 		delete(data, "content_id")
 		delete(data, "user_id")
+		delete(data, "comments_id")
 	}
 	return bson.M(data), nil
 }

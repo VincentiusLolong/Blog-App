@@ -23,9 +23,9 @@ func (c *services) CreateComment(a context.Context, ContentDB models.Comments, u
 }
 
 func (c *services) EditComment(a context.Context, commentid string, userid string, bsondata primitive.M) (*mongo.UpdateResult, error) {
-	commId, _ := primitive.ObjectIDFromHex(commentid)
 	uId, _ := primitive.ObjectIDFromHex(userid)
-	filter := bson.M{"content_id": commId, "user_id": uId}
+	mId, _ := primitive.ObjectIDFromHex(commentid)
+	filter := bson.M{"comments_id": mId, "user_id": uId}
 	update := bson.D{{Key: "$set", Value: bsondata}}
 
 	result, err := c.monggose.CommentsCollection().UpdateOne(a, filter, update)
