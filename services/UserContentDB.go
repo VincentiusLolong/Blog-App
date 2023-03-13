@@ -62,3 +62,5 @@ func (c *services) ContentDelete(a context.Context, str, content_id string) (*mo
 	result, err := c.monggose.ContentCollection().DeleteOne(a, filter)
 	return result, err
 }
+
+func LookUpContent()

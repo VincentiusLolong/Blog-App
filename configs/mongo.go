@@ -49,20 +49,20 @@ func ConnectDB() *mongo.Client {
 	return client
 }
 
-var Client *mongo.Client = ConnectDB()
+var client *mongo.Client = ConnectDB()
 
 // getting database collections
 func (m *monggose) UserCollection() *mongo.Collection {
-	m.collection = Client.Database(AllEnv("DATABASE")).Collection(AllEnv("THECOLLECTION"))
+	m.collection = client.Database(AllEnv("DATABASE")).Collection(AllEnv("THECOLLECTION"))
 	return m.collection
 }
 
 func (m *monggose) ContentCollection() *mongo.Collection {
-	m.collection = Client.Database(AllEnv("DATABASE")).Collection(AllEnv("PXCOLLECTIONS"))
+	m.collection = client.Database(AllEnv("DATABASE")).Collection(AllEnv("PXCOLLECTIONS"))
 	return m.collection
 }
 
 func (m *monggose) CommentsCollection() *mongo.Collection {
-	m.collection = Client.Database(AllEnv("DATABASE")).Collection(AllEnv("COMCOLLECTIONS"))
+	m.collection = client.Database(AllEnv("DATABASE")).Collection(AllEnv("COMCOLLECTIONS"))
 	return m.collection
 }

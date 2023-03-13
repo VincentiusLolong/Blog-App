@@ -286,7 +286,7 @@ func (ct *controller) EditMyPorfile(c *fiber.Ctx) error {
 					"DataNull": err.Error()}})
 	}
 
-	data, err := ParseJson(edit)
+	data, err := parsejson(edit)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(responses.UserResponse{
 			Status:  http.StatusInternalServerError,

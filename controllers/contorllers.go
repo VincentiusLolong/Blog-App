@@ -55,7 +55,7 @@ func contectx() (context.Context, context.CancelFunc) {
 	return ctx, cancel
 }
 
-func ParseJson[test models.UserPorfile | models.AllContents | models.Comments](edit test) (primitive.M, error) {
+func parsejson[test models.UserPorfile | models.AllContents | models.Comments](edit test) (primitive.M, error) {
 	data := make(map[string]interface{})
 	userJson, err := json.Marshal(edit)
 	if err != nil {

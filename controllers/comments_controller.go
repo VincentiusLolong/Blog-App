@@ -67,7 +67,7 @@ func (ct *controller) EditComment(c *fiber.Ctx) error {
 					"DataNull": err.Error()}})
 	}
 
-	primitive, err := ParseJson(editComment)
+	primitive, err := parsejson(editComment)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(
 			responses.UserResponse{
